@@ -1,0 +1,17 @@
+package html;
+
+import java.util.List;
+
+public class HTMLHead{
+	
+	String title;
+	List<Element> content;
+	
+	public HTMLHead(String title, List<Element> content){
+		this.title = title;
+		this.content = content;
+	}
+	
+	
+	
+}
