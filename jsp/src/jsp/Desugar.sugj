@@ -1,0 +1,58 @@
+package jsp;
+
+import html.Syntax;
+import org.sugarj.languages.Java;
+import concretesyntax.Java;
+import jsp.Syntax;
+
+public sugar Desugar {
+	
+	desugarings
+		jspDec
+		jspBody-to-Java
+		jspBodyContents-to-Java
+%%		jspDoc
+		transformContent
+		idToString
+	
+	rules
+		jspDec :
+		JSPDec(mods, Id(n), JSPBody(body))
+	 	->
+	 	ClassDec(ClassDecHead([ SingleElemAnno(TypeName(Id("WebServlet")), Lit(String(<idToString>Id(n)))), mods], Id(n), None, Some(SuperDec(ClassType(TypeName(Id("HttpServlet")), None))), None), <jspBody-to-Java>JSPBody(body))
+%%	 	|[ public class Id extends HttpServlet ~(<jspBody>JSPBody(body)) ]|
+	
+		jspBody-to-Java :
+		JSPBody(JSPDoc(contents))
+		->
+		ClassBody(<jspBodyContents-to-Java> contents)
+		
+		jspBodyContents-to-Java :
+		[HtmlElement|contents]
+		->
+		[|[ writer.println("yo"); ]|] %% Noch nicht sicher, wie ich das angehe.
+		
+%%		jspDoc :
+%%		JSPDoc([content])
+%%		->
+%%		<transformContent> content
+		
+		
+%%		jspDoc :
+%%		JSPDoc([content|contents])
+%%		->
+%%		(<transformContent> content, <jspDoc> contents)
+		
+		transformContent :
+		HtmlElement
+		->
+		|[ System.out.println("foo"); ]|
+		
+		idToString :
+		Id(n)
+		->
+		String(n)
+	
+	
+	
+}
