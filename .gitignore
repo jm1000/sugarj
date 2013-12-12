@@ -16,3 +16,4 @@
 */.metadata/*
 .metadata/*
 jsp/.sugarjcache/*
+jsp/bin/*
