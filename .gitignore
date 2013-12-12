@@ -11,4 +11,8 @@
 *.serv
 *.str
 *.sdf
-
+*.aterm
+*.desug
+*/.metadata/*
+.metadata/*
+jsp/.sugarjcache/*
