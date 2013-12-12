@@ -1,58 +1,438 @@
 package jsp;
 
-import html.Syntax;
-import org.sugarj.languages.Java;
+
+import org.sugarj.languages.Java; 
 import concretesyntax.Java;
 import jsp.Syntax;
 
 public sugar Desugar {
 	
 	desugarings
-		jspDec
-		jspBody-to-Java
-		jspBodyContents-to-Java
+		jspDecStart
+		
 %%		jspDoc
-		transformContent
-		idToString
+	%%	transformContent
+	%%	idToString
 	
 	rules
+
+		jspDecStart :
+		JSPDec(a, b, c)
+		->
+		[TypeImportDec(
+      TypeName(
+        PackageOrTypeName(PackageOrTypeName(Id("java")), Id("io"))
+      , Id("IOException")
+      )
+    )
+  , TypeImportDec(
+      TypeName(
+        PackageOrTypeName(PackageOrTypeName(Id("java")), Id("io"))
+      , Id("PrintWriter")
+      )
+    )
+  , TypeImportDec(
+      TypeName(
+        PackageOrTypeName(PackageOrTypeName(Id("javax")), Id("servlet"))
+      , Id("ServletException")
+      )
+    )
+  , TypeImportDec(
+      TypeName(
+        PackageOrTypeName(
+          PackageOrTypeName(PackageOrTypeName(Id("javax")), Id("servlet"))
+        , Id("annotation")
+        )
+      , Id("WebServlet")
+      )
+    )
+  , TypeImportDec(
+      TypeName(
+        PackageOrTypeName(
+          PackageOrTypeName(PackageOrTypeName(Id("javax")), Id("servlet"))
+        , Id("http")
+        )
+      , Id("HttpServlet")
+      )
+    )
+  , TypeImportDec(
+      TypeName(
+        PackageOrTypeName(
+          PackageOrTypeName(PackageOrTypeName(Id("javax")), Id("servlet"))
+        , Id("http")
+        )
+      , Id("HttpServletRequest")
+      )
+    )
+  , TypeImportDec(
+      TypeName(
+        PackageOrTypeName(
+          PackageOrTypeName(PackageOrTypeName(Id("javax")), Id("servlet"))
+        , Id("http")
+        )
+      , Id("HttpServletResponse")
+      )
+    ), <jspDec>JSPDec(a, b, c)]
+	
+	
+	
+		jspDec : %% ignore import statements for now
+		JSPDec(mods, Id(n), JSPBody(JSPDoc([JSPImport(imp)|body])))
+		->
+		[TypeImportDec(
+			imp
+		)
+		,<jspDec>JSPDec(mods, Id(n), JSPBody(JSPDoc(body)))]
+	 
 		jspDec :
 		JSPDec(mods, Id(n), JSPBody(body))
 	 	->
-	 	ClassDec(ClassDecHead([ SingleElemAnno(TypeName(Id("WebServlet")), Lit(String(<idToString>Id(n)))), mods], Id(n), None, Some(SuperDec(ClassType(TypeName(Id("HttpServlet")), None))), None), <jspBody-to-Java>JSPBody(body))
-%%	 	|[ public class Id extends HttpServlet ~(<jspBody>JSPBody(body)) ]|
-	
+%%	 	ClassDec(ClassDecHead([ SingleElemAnno(TypeName(Id("WebServlet")), Lit(String(Id(n)))), mods], Id(n), None, Some(SuperDec(ClassType(TypeName(Id("HttpServlet")), None))), None), <jspBody-to-Java>JSPBody(body))
+%%		PlainDec(PlainDecHead(mods, n, Some("jsp")), PlainBody(body))
+		ClassDec(
+      		ClassDecHead(
+        		[ SingleElemAnno(TypeName(Id("WebServlet")), Lit(String([Chars(<concat-strings>["/",n])]))) %% need to construct "/"n somehow at this point. doesn't work with Plus(..) or simply Chars(["/"|n])
+        			, Public()
+        		]
+      			, Id(n)
+      			, None()
+      			, Some(SuperDec(ClassType(TypeName(Id("HttpServlet")), None())))
+      			, None()
+      		)
+    		, ClassBody(
+    		  	[ <jspBody-to-Java>JSPBody(body)
+    		  	, MethodDec(
+            MethodDecHead(
+              [Protected()]
+            , None()
+            , Void()
+            , Id("doPost")
+            , [ Param(
+                  []
+                , ClassOrInterfaceType(TypeName(Id("HttpServletRequest")), None())
+                , Id("request")
+                )
+              , Param(
+                  []
+                , ClassOrInterfaceType(TypeName(Id("HttpServletResponse")), None())
+                , Id("response")
+                )
+              ]
+            , Some(
+                ThrowsDec(
+                  [ ClassType(TypeName(Id("ServletException")), None())
+                  , ClassType(TypeName(Id("IOException")), None())
+                  ]
+                )
+              )
+            )
+          , Block([])
+          )])
+    	)
+	  
+	  
 		jspBody-to-Java :
 		JSPBody(JSPDoc(contents))
 		->
-		ClassBody(<jspBodyContents-to-Java> contents)
+		MethodDec(
+            MethodDecHead(
+              [Protected()]
+            , None()
+            , Void()
+            , Id("doGet")
+            , [ Param(
+                  []
+                , ClassOrInterfaceType(TypeName(Id("HttpServletRequest")), None())
+                , Id("request")
+                )
+              , Param(
+                  []
+                , ClassOrInterfaceType(TypeName(Id("HttpServletResponse")), None())
+                , Id("response")
+                )
+              ]
+            , Some(
+                ThrowsDec(
+                  [ ClassType(TypeName(Id("ServletException")), None())
+                  , ClassType(TypeName(Id("IOException")), None())
+                  ]
+                )
+              )
+            )
+          , <lift-block>Block(
+              [ LocalVarDecStm(
+                  LocalVarDec(
+                    []
+                  , ClassOrInterfaceType(TypeName(Id("PrintWriter")), None())
+                  , [ VarDec(
+                        Id("writer")
+                      , Invoke(
+                          Method(MethodName(AmbName(Id("response")), Id("getWriter")))
+                        , []
+                        )
+                      )
+                    ]
+                  )
+                )
+              , (<jspBodyContents-to-Java> contents)
+              ]
+            )
+          )
+		
+		
+		%% "lift" the JSP-Elements to the level of BlockStatements
+		lift-block :
+		Block([LocalVarDecStm(
+                  LocalVarDec(
+                    []
+                  , ClassOrInterfaceType(TypeName(Id("PrintWriter")), None())
+                  , [ VarDec(
+                        Id("writer")
+                      , Invoke(
+                          Method(MethodName(AmbName(Id("response")), Id("getWriter")))
+                        , []
+                        )
+                      )
+                    ]
+                  )
+                ),t])
+		->
+		Block([LocalVarDecStm(
+                  LocalVarDec(
+                    []
+                  , ClassOrInterfaceType(TypeName(Id("PrintWriter")), None())
+                  , [ VarDec(
+                        Id("writer")
+                      , Invoke(
+                          Method(MethodName(AmbName(Id("response")), Id("getWriter")))
+                        , []
+                        )
+                      )
+                    ]
+                  )
+                )|t])
+				
+		%% HTML Transformation
+		jspBodyContents-to-Java : [] -> []
+		jspBodyContents-to-Java :
+		[HtmlContent(cont)|contents]
+		->
+		<try-concat> [<html-to-Java>cont, <jspBodyContents-to-Java>contents]
+
+		jspBodyContents-to-Java :
+		[Element(a, b, c, d)|contents]
+		->
+		<jspBodyContents-to-Java>[HtmlContent(Element(a, b, c, d))|contents]
 		
 		jspBodyContents-to-Java :
-		[HtmlElement|contents]
+		[Skriptlet(a)|contents]
 		->
-		[|[ writer.println("yo"); ]|] %% Noch nicht sicher, wie ich das angehe.
+		<jspBodyContents-to-Java>[HtmlContent(Skriptlet(a))|contents]
 		
-%%		jspDoc :
-%%		JSPDoc([content])
-%%		->
-%%		<transformContent> content
-		
-		
-%%		jspDoc :
-%%		JSPDoc([content|contents])
-%%		->
-%%		(<transformContent> content, <jspDoc> contents)
-		
-		transformContent :
-		HtmlElement
+		jspBodyContents-to-Java :
+		[HtmlText(a)|contents]
 		->
-		|[ System.out.println("foo"); ]|
+		<jspBodyContents-to-Java>[HtmlContent(HtmlText(a))|contents]
 		
-		idToString :
-		Id(n)
+		jspBodyContents-to-Java :
+		[Expression(a)|contents]
 		->
-		String(n)
-	
-	
+		<jspBodyContents-to-Java>[HtmlContent(Expression(a))|contents]
+		
+		
+		
+		html-to-Java :
+		HtmlText(Text([CharDataPart(n)]))
+		->
+		|[ writer.println(~nS); ]|
+		where <java-lit> n => nS
+		
+		html-to-Java :
+		Comment(n)
+		->
+		|[ System.out.println(~nS); ]|
+//		|[ writer.println(~nS); ]|
+		where <java-lit> n => nS
+		
+		html-to-Java :
+		Element(ElemName(startname), attributes, content, ElemName(endname))
+		->
+		<concat-middle>(
+			|[ writer.println("<" + ~startnameS + " " + ~(<attributes-to-string>attributes) + ">");]|, 
+			<jspBodyContents-to-Java>content,
+			//<jspBodyContents-to-Java>(<htmlify>content),
+			|[ writer.println("</"+ ~endnameS + ">");]|
+		)
+		where <java-lit> startname => startnameS
+		    ; <java-lit> endname => endnameS
+
+
+		html-to-Java :
+		Skriptlet(JavaSkriptlet(a))
+		->
+		<lift-JavaSkriptlet>(a)
+//		where <debug> a 
+
+		html-to-Java :
+		Expression(a)
+		->
+		|[ writer.println(~a); ]|
+		
+		lift-JavaSkriptlet :
+		[For(a, b, c, Block(listOfMixedStms))|stms]
+		->
+		[For(a, b, c, Block(<lift-MixedStms>listOfMixedStms))|<lift-JavaSkriptlet>stms]
+		
+		lift-JavaSkriptlet :
+		[If(expr, Block(listOfMixedStms))|stms]
+		->
+		[If(expr, Block(<lift-MixedStms>listOfMixedStms))|<lift-JavaSkriptlet>stms]
+		
+		lift-JavaSkriptlet :
+		[If(expr, Block(then), Block(else))|stms]
+		->
+		[If(expr, Block(<lift-MixedStms>then), Block(<lift-MixedStms>else))|<lift-JavaSkriptlet>stms]
+		
+		lift-JavaSkriptlet :
+		[DoWhile(Block(do), cond)|stms]
+		->
+		[DoWhile(Block(<lift-MixedStms>do), cond)|<lift-JavaSkriptlet>stms]
+		
+		lift-JavaSkriptlet :
+		[While(cond, Block(do))|stms]
+		->
+		[While(cond, Block(<lift-MixedStms>do))|<lift-JavaSkriptlet>stms]
+		
+		
+		
+		lift-JavaSkriptlet :
+		[JavaStm|stms]
+		->
+		[JavaStm|<lift-JavaSkriptlet>stms]
+		
+		lift-JavaSkriptlet :
+		[]
+		->
+		[]
+		
+		lift-MixedStms :
+		[]
+		->
+		[]
+		
+		lift-MixedStms :
+		[EscapedJSP(conts)|stms]
+		->
+		<concat>[<jspBodyContents-to-Java>conts,<lift-MixedStms>stms]
+		
+		lift-MixedStms :
+		[JavaStm|stms]
+		->
+		[JavaStm|<lift-MixedStms>stms]
+		
+		htmlify :
+		[Element(a, b, c, d)|as]
+		->
+		[HtmlContent(Element(a, b, c, d))|<htmlify>as]
+		
+		
+		htmlify :
+		[Skriptlet(a)|as]
+		->
+		[HtmlContent(Skriptlet(a))|<htmlify>as]
+		
+		htmlify :
+		[]
+		->
+		[]
+
+		
+		java-lit : s -> Lit(String([Chars(s)])) where <is-string> s 
+		
+		html-to-Java :
+		EmptyElement(startname, attributes) 
+		->
+		|[ writer.println("<" + ~startnameS + " " + ~(<attributes-to-string>attributes) + "/>");]|
+		where <java-lit> startname => startnameS
+		
+		concat-middle :
+		(x1, xs, x2)
+		->
+		<concat>[[x1],xs,[x2]]
+		
+		/* attributes-to-string : %% placeholder
+		a
+		->
+		<java-lit> "font=\\\"Arial\\\"" */
+		
+		try-concat :
+		[]
+		->
+		[]
+		
+		try-concat :
+		[head|tail]
+		->
+		[head|<try-concat>tail]
+		where <not(is-list)> head
+		
+		try-concat :
+		[head|tail] 
+		->
+		<concat>[head, <try-concat>tail]
+		where <is-list> head
+		
+				
+		attributes-to-string :
+		[]
+		->
+		<java-lit> " "
+		
+		attributes-to-string :
+		[Attribute(AttrName(name), DoubleQuoted([CharDataPart(value)]))|attributes]
+		->
+		Plus(
+			Plus(
+				Plus(
+					Plus(
+						<java-lit> name,
+						<java-lit> "=\\\""
+					),
+					<java-lit> value
+				),
+				<java-lit> "\\\""
+			),
+			<attributes-to-string>attributes
+		)
+		
+		
+		
+		%% Assumption: JSPDec is always the last ToplevelDec in a JSP containing file
+		extract-imports : %% since the LAST ToplevelDec is the JSPDec, anything else can just be passed
+		[tld|tlds]
+		->
+		[tld|<extract-imports>tlds]
+		
+		extract-imports : %% now we have to get the import statements out of the body and lift them to ToplevelDeclarations
+		[JSPDec(mods, Id(n), JSPBody(JSPDoc([])))]
+		->
+		[<jspDec>JSPDec(mods, Id(n), JSPBody(JSPDoc([])))]
+		
+		extract-imports : %% case 1 was the empty JSPDoc, case 2 is no import statement in the JSPBody
+		[JSPDec(mods, Id(n), JSPBody(JSPDoc(body)))]
+		->
+		[<jspDec>JSPDec(mods, Id(n), JSPBody(JSPDoc(body)))]
+		
+		extract-imports : %% case 3 is a JSPBody containing import statements
+		[JSPDec(mods, Id(n), JSPBody(JSPDoc([JSPImport(imp)|body])))]
+		->
+		[<jspImport-to-Java>JSPImport(imp)|<extract-imports>JSPDec(mods, Id(n), JSPBody(JSPDoc(body)))]
+		
+		jspImport-to-Java : %% Transform the import statement from JSP to an import statement in Java
+		JSPImport(imp)
+		->
+		TypeImportDec(imp)
+		
+
 	
 }

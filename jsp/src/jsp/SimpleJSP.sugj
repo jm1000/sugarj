@@ -1,16 +1,30 @@
 package jsp; 
 import jsp.Syntax;
+import jsp.Desugar;
 import html.Syntax;
 
 
-public jsp SimpleJSP {   
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
-<title>Insert title here</title>
-</head>
-<body>
-<h1>Hello, world!</h1>
-</body>
-</html>
-}
+
+ 
+
+public jsp SimpleJSP { 
+	<%@ page import="java.util.List" %>
+	<!-- Kommentar -->
+	<html>
+		<head>
+			<title>ugjzghii</title>
+		</head>
+		<body bgcolor="#FFFFFF" font="Arial">
+		   <% for(int i = 0; i < 1; i++) {
+		   		doSomething();
+		  		%> foobar <%
+		  		System.out.println("baz"); } %>  
+			 <% if(somePred)
+		   		{ %> 42 <% }
+		   	  else{
+		   	  	doNothing();
+		   	  } %>  <% 0; %>
+		<% 1; %> <% 2; %>
+		</body> 
+	</html>
+} 

@@ -1,14 +1,87 @@
 package html;
-
+ 
 import org.sugarj.languages.Plain;
+  
+public sugar Syntax { 
 
-public extension Syntax {
+sorts Document Element HtmlContent
+  context-free syntax
+    Prologue Element Epilogue -> Document {cons("Document")}
+    Element -> HtmlContent
+    DocTypeDecl -> HtmlContent {cons("DocTypeDec")}
+    HTMLComment -> HtmlContent {cons("Comment")}    
+    
+%% module html-prolog
+  context-free syntax
+    HTMLDecl? Misc* DocTypePrologue? -> Prologue {cons("Prologue")}
+    Misc* -> Epilogue {cons("Epilogue")}
+    HTMLComment -> Misc {cons("Comment")}
+
+  context-free syntax
+  "<!DOCTYPE" -> DocTypeLeft
+	"html"			-> RootElement
+	"PUBLIC"		-> OtherInfo
+	"SYSTEM"		-> OtherInfo
+	DocTypeLeft RootElement OtherInfo  URI* ">"	-> DocTypeDecl {cons("DocTypeDecl")}
+    DocTypeDecl Misc* -> DocTypePrologue {cons("DocTypePrologue")}
+
+  syntax
+    CharData      -> <HtmlContent-CF> {cons("HtmlText")}
+
+  context-free syntax
+  	"<" ElemName Attribute* "/>" 	-> Element {cons("EmptyElement")}
+   	"<" ElemName Attribute* ">" 		-> Element {cons("EmptyElement")}
+    "<" ElemName Attribute* ">" HtmlContent* "</" ElemName ">"    	-> Element {cons("Element")}
+	  NCName -> ElemName {cons("ElemName")}
+      
+  //context-free syntax
+    //HTMLTagStart ElemName Attribute* HTMLSlashTagEnd 	-> Element {cons("EmptyElement")}
+    //HTMLTagStart ElemName Attribute* HTMLTagEnd 		-> Element {cons("EmptyElement")}
+    //HTMLTagStart ElemName Attribute* HTMLTagEnd HtmlContent* HTMLSlashTagStart ElemName HTMLTagEnd    	-> Element {cons("Element")}
+	//NCName -> ElemName {cons("ElemName")}
+     
+  lexical syntax
+    [A-Za-z\_] [A-Za-z0-9\.\-\_]* 		-> EName
+    "<"			-> HTMLTagStart
+    ">"			-> HTMLTagEnd
+	"</"		-> HTMLSlashTagStart
+	"/>"		-> HTMLSlashTagEnd
 	
-	%% module hmtl-text
- 	lexical syntax
+  lexical restrictions
+    EName -/- [A-Za-z0-9\.\-\_]
+    HTMLTagStart -/- [\%\!]
+    
+  context-free syntax
+    AttrName "=" AttValue 	-> Attribute {cons("Attribute")}
+    NCName -> AttrName {cons("AttrName")}
+
+  syntax
+    DoubleQuotedStm -> <URI-CF> {cons("URI")}
+
+  syntax
+    "\"" DoubleQuotedPart* "\"" -> DoubleQuotedStm
+    "\"" DoubleQuotedPart* "\"" -> <AttValue-CF> {cons("DoubleQuoted")}
+    "'"  SingleQuotedPart* "'" -> <AttValue-CF> {cons("SingleQuoted")}
+    <DoubleQuotedText-LEX> -> DoubleQuotedPart {cons("CharDataPart")}
+    <SingleQuotedText-LEX> -> SingleQuotedPart {cons("CharDataPart")} 
+    Ref -> DoubleQuotedPart
+    Ref -> SingleQuotedPart
+    
+  lexical syntax
+    ~[\&\<\"]+ -> DoubleQuotedText
+    ~[\&\<\']+ -> SingleQuotedText
+    [A-Za-z\_] [A-Za-z0-9\.\-\_]* -> AName
+    
+  lexical restrictions
+    DoubleQuotedText -/- ~[\&\<\"]
+    SingleQuotedText -/- ~[\&\<\']
+    AName -/- [A-Za-z0-9\.\-\_]
+
+%% module hmtl-text
+  lexical syntax
     [\ \t\n\13] -> WhiteSpaceChar
 
- 	syntax
+  syntax
     CharDataPart+ 					-> CharData {cons("Text")}
     FooCharDataText 				-> CharDataPart {cons("CharDataPart")}
     Ref 							-> CharDataPart
@@ -17,58 +90,32 @@ public extension Syntax {
     CharRef    -> Ref
     EntityRef  -> Ref
 
-  	syntax restrictions
+  syntax restrictions
     CharData -/- [\&] | ~[\<\&]
 
- 	lexical syntax
+  lexical syntax
     ~[\<\&]+ -> CharDataText
 
-	lexical restrictions
+  lexical restrictions
     CharDataToken    -/- ~[\<\]\ \t\n\13]
     CharDataText -/- ~[\<\&]
 
-	%% module html-names
-	  lexical syntax
+%% module html-names
+  lexical syntax
     [A-Za-z\_] [A-Za-z0-9\.\-\_]* -> NCName
 
-  	lexical restrictions
+  lexical restrictions
     NCName -/- [A-Za-z0-9\.\-\_]
-	  
-	  
-	%% Basic html structure
-  	context-free syntax
-	  DocTypeDecl? HTMLDoc -> Document {cons("Document")}
-	  HTMLOpen Head Body HTMLClose -> HTMLDoc {cons("HTMLDoc")}
-	  HeadOpen Title HeadContent* HeadClose -> Head {cons("Head")}
-	  BodyOpen BodyContent* BodyClose -> Body {cons("Body")}
-	  Comment -> HeadContent{cons("Comment")}
-	  Comment -> BodyContent{cons("Comment")}
-	  
-	%% Head content 1.0
-	%% TBD: Meta-Data, base, link, comments
-	context-free syntax
-	  "<head>" -> HeadOpen{cons("HeadOpen")}
-	  "</head>" -> HeadClose{cons("HeadClose")}
-	  Style -> HeadContent{cons("Style")}
-	  Script -> HeadContent{cons("Script")}
-	  "<title>" CharData "</title>" -> Title{cons("Title")}
-	  %% "<style type=" StyleType ">" StyleContent* "</style>" -> Style{cons("StyleDecl")}
-	  "<script" ScriptType "src=\"" URL "\"" ScriptDefer? ScriptCharset?"></script>" -> Script{cons("ExtScript")}
-	  "<script" ScriptType ">" ScriptContent "</script>" -> Script{cons("DocScript")}
-	  
-	%% Body Declaration
-	context-free syntax
-	  "<body" BodyAttribute* ">" -> BodyOpen{cons("BodyOpen")}
-	  "</body>" -> BodyClose{cons("BodyClose")}
-	  "alink=" HTMLColor -> BodyAttribute{cons("BodyALinkColor")}
-	  "background=" URL -> BodyAttribute{cons("BodyBackground")}
-	  "bgcolor=" HTMLColor -> BodyAttribute{cons("BodyBGColor")}
-	  "link=" HTMLColor -> BodyAttribute{cons("BodyLinkColor")}
-	%%  "onload="
-	%%  "onunload="
-	  "text=" HTMLColor -> BodyAttribute{cons("BodyTextColor")}
-	  "vlink=" HTMLColor -> BodyAttribute{cons("BodyVLinkColor")}
-	  
-	
-	
+
+%% module html-comments
+  lexical syntax
+    "<!--" -> CommentLeft
+    "-->" -> CommentRight
+    CommentLeft CommentContent* CommentRight -> HTMLComment
+    Dash -> CommentContent
+    ~[\-] -> CommentContent
+    "-" -> Dash
+
+  lexical restrictions
+    Dash -/- [\-]
 }

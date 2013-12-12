@@ -1,0 +1,14 @@
+*.ctree
+*.def
+*.tbl
+*.version
+*.prefs
+*.class
+*.java
+*.gen
+*.dep
+*.model
+*.serv
+*.str
+*.sdf
+
