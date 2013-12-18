@@ -12,7 +12,7 @@ public sugar Desugar {
 		
 %%		jspDoc
 	%%	transformContent
-	%%	idToString
+	%%	idToStringf
 	
 	rules
 
@@ -48,7 +48,7 @@ public sugar Desugar {
     )
   , TypeImportDec(
       TypeName(
-        PackageOrTypeName(
+        PackageOrTypeName( 
           PackageOrTypeName(PackageOrTypeName(Id("javax")), Id("servlet"))
         , Id("http")
         )
@@ -76,7 +76,7 @@ public sugar Desugar {
 	
 	
 	
-		jspDec : %% ignore import statements for now
+		jspDec :
 		JSPDec(mods, Id(n), JSPBody(JSPDoc([JSPImport(imp)|body])))
 		->
 		[TypeImportDec(
@@ -91,7 +91,7 @@ public sugar Desugar {
 %%		PlainDec(PlainDecHead(mods, n, Some("jsp")), PlainBody(body))
 		ClassDec(
       		ClassDecHead(
-        		[ SingleElemAnno(TypeName(Id("WebServlet")), Lit(String([Chars(<concat-strings>["/",n])]))) %% need to construct "/"n somehow at this point. doesn't work with Plus(..) or simply Chars(["/"|n])
+        		[ SingleElemAnno(TypeName(Id("WebServlet")), Lit(String([Chars(<concat-strings>["/",n])]))) 
         			, Public()
         		]
       			, Id(n)
@@ -174,7 +174,7 @@ public sugar Desugar {
                     ]
                   )
                 )
-              , (<jspBodyContents-to-Java> contents)
+              , (<jspBodyContents-to-Java> contents) %% content-dispatch
               ]
             )
           )
@@ -219,7 +219,7 @@ public sugar Desugar {
 		->
 		<try-concat> [<html-to-Java>cont, <jspBodyContents-to-Java>contents]
 
-		jspBodyContents-to-Java :
+	/*	jspBodyContents-to-Java :
 		[Element(a, b, c, d)|contents]
 		->
 		<jspBodyContents-to-Java>[HtmlContent(Element(a, b, c, d))|contents]
@@ -237,9 +237,17 @@ public sugar Desugar {
 		jspBodyContents-to-Java :
 		[Expression(a)|contents]
 		->
-		<jspBodyContents-to-Java>[HtmlContent(Expression(a))|contents]
+		<jspBodyContents-to-Java>[HtmlContent(Expression(a))|contents] */
 		
-		
+		html-to-Java :
+		Element(ElemName(startName), attributes, kids, ElemName(endname))
+		->
+		<concat-middle>(|[ writer.println("<" + ~startnameS + " " + ~(<attributes-to-string>attributes) + ">"); ]|,
+		javaKids,
+		|[ writer.println("</" + ~endnameS + ">");]|)
+		where <map(html-to-java);concat> kids => javaKids
+		; <java-lit> startname => startnameS
+		; <java-lit> endname => endnameS
 		
 		html-to-Java :
 		HtmlText(Text([CharDataPart(n)]))
@@ -254,7 +262,7 @@ public sugar Desugar {
 //		|[ writer.println(~nS); ]|
 		where <java-lit> n => nS
 		
-		html-to-Java :
+	/*	html-to-Java :
 		Element(ElemName(startname), attributes, content, ElemName(endname))
 		->
 		<concat-middle>(
@@ -264,13 +272,14 @@ public sugar Desugar {
 			|[ writer.println("</"+ ~endnameS + ">");]|
 		)
 		where <java-lit> startname => startnameS
-		    ; <java-lit> endname => endnameS
+		    ; <java-lit> endname => endnameS */
 
 
 		html-to-Java :
 		Skriptlet(JavaSkriptlet(a))
 		->
-		<lift-JavaSkriptlet>(a)
+		plainJava
+		where <map(javaSkriptlet-to-Java);concat> a => plainJava
 //		where <debug> a 
 
 		html-to-Java :
@@ -278,10 +287,22 @@ public sugar Desugar {
 		->
 		|[ writer.println(~a); ]|
 		
-		lift-JavaSkriptlet :
-		[For(a, b, c, Block(listOfMixedStms))|stms]
+		javaSkriptlet-to-Java :
+		For(a, b, c, Block(forBlock))
 		->
-		[For(a, b, c, Block(<lift-MixedStms>listOfMixedStms))|<lift-JavaSkriptlet>stms]
+		For(a, b, c, Block(plainJavaBlock))
+		where <map(javaSkriptlet-to-Java);concat> forBlock => plainJavaBlock
+		
+		javaSkriptlet-to-Java :
+		JavaStm
+		->
+		JavaStm
+		
+		javaSkriptlet-to-Java :
+		EscapedJsp(elems)
+		->
+		plainJavaEscaped
+		where <map(html-to-Java); concat> elems => plainJavaEscaped
 		
 		lift-JavaSkriptlet :
 		[If(expr, Block(listOfMixedStms))|stms]
