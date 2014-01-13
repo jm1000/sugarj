@@ -9,11 +9,11 @@ import html.Syntax;
 
 public jsp SimpleJSP { 
 	<%@ page import="java.util.List" %>
-	<!-- Kommentar -->
+//	<!-- Kommentar -->
 	<html>
 		<head>
 			<title>ugjzghii</title>
-		</head>
+		</head> /*
 		<body bgcolor="#FFFFFF" font="Arial">
 		   <% for(int i = 0; i < 1; i++) {
 		   		doSomething();
@@ -25,6 +25,6 @@ public jsp SimpleJSP {
 		   	  	doNothing();
 		   	  } %>  <% 0; %>
 		<% 1; %> <% 2; %>
-		</body> 
+		</body>  */
 	</html>
 } 

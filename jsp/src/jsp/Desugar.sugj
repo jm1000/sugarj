@@ -240,14 +240,15 @@ public sugar Desugar {
 		<jspBodyContents-to-Java>[HtmlContent(Expression(a))|contents] */
 		
 		html-to-Java :
-		Element(ElemName(startName), attributes, kids, ElemName(endname))
+		Element(ElemName(startname), attributes, kids, ElemName(endname))
 		->
 		<concat-middle>(|[ writer.println("<" + ~startnameS + " " + ~(<attributes-to-string>attributes) + ">"); ]|,
 		javaKids,
 		|[ writer.println("</" + ~endnameS + ">");]|)
-		where <map(html-to-java);concat> kids => javaKids
+		where <map(html-to-Java);concat> kids => javaKids
 		; <java-lit> startname => startnameS
 		; <java-lit> endname => endnameS
+		; <debug> startname
 		
 		html-to-Java :
 		HtmlText(Text([CharDataPart(n)]))
@@ -299,7 +300,7 @@ public sugar Desugar {
 		JavaStm
 		
 		javaSkriptlet-to-Java :
-		EscapedJsp(elems)
+		EscapedJSP(elems)
 		->
 		plainJavaEscaped
 		where <map(html-to-Java); concat> elems => plainJavaEscaped
