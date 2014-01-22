@@ -5,26 +5,20 @@ import html.Syntax;
 
 
 
+
  
 
 public jsp SimpleJSP { 
-	<%@ page import="java.util.List" %>
-//	<!-- Kommentar -->
+	<%@ page import="java.util.List" %> 
 	<html>
-		<head>
-			<title>ugjzghii</title>
-		</head> /*
-		<body bgcolor="#FFFFFF" font="Arial">
-		   <% for(int i = 0; i < 1; i++) {
-		   		doSomething();
-		  		%> foobar <%
-		  		System.out.println("baz"); } %>  
-			 <% if(somePred)
-		   		{ %> 42 <% }
-		   	  else{
-		   	  	doNothing();
-		   	  } %>  <% 0; %>
-		<% 1; %> <% 2; %>
-		</body>  */
+		<!-- Kommentar -->
+		<% if(true) { doStuff(); } %>
+		a
+		<% if(true) { doStuff(); } %>
+		b
+		<% if(true) { doStuff(); } %>
+		c
+		<% if(true) { %> foobar <% } %>
+		d
 	</html>
-} 
+}   

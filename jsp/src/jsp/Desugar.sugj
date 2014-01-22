@@ -214,178 +214,107 @@ public sugar Desugar {
 				
 		%% HTML Transformation
 		jspBodyContents-to-Java : [] -> []
+		
 		jspBodyContents-to-Java :
 		[HtmlContent(cont)|contents]
 		->
-		<try-concat> [<html-to-Java>cont, <jspBodyContents-to-Java>contents]
-
-	/*	jspBodyContents-to-Java :
-		[Element(a, b, c, d)|contents]
-		->
-		<jspBodyContents-to-Java>[HtmlContent(Element(a, b, c, d))|contents]
-		
-		jspBodyContents-to-Java :
-		[Skriptlet(a)|contents]
-		->
-		<jspBodyContents-to-Java>[HtmlContent(Skriptlet(a))|contents]
-		
-		jspBodyContents-to-Java :
-		[HtmlText(a)|contents]
-		->
-		<jspBodyContents-to-Java>[HtmlContent(HtmlText(a))|contents]
-		
-		jspBodyContents-to-Java :
-		[Expression(a)|contents]
-		->
-		<jspBodyContents-to-Java>[HtmlContent(Expression(a))|contents] */
+		<concat>[<html-to-Java>cont|<jspBodyContents-to-Java>contents]
 		
 		html-to-Java :
 		Element(ElemName(startname), attributes, kids, ElemName(endname))
 		->
-		<concat-middle>(|[ writer.println("<" + ~startnameS + " " + ~(<attributes-to-string>attributes) + ">"); ]|,
+		<try-concat-middle>(|[ writer.println("<" + ~startnameS + " " + ~(<attributes-to-string>attributes) + ">"); ]|,
 		javaKids,
 		|[ writer.println("</" + ~endnameS + ">");]|)
-		where <map(html-to-Java);concat> kids => javaKids
+		where <try-concat><map(html-to-Java)> kids => javaKids 
 		; <java-lit> startname => startnameS
 		; <java-lit> endname => endnameS
-		; <debug> startname
 		
 		html-to-Java :
 		HtmlText(Text([CharDataPart(n)]))
 		->
-		|[ writer.println(~nS); ]|
+		[|[ writer.println(~nS); ]|]
 		where <java-lit> n => nS
 		
 		html-to-Java :
 		Comment(n)
 		->
-		|[ System.out.println(~nS); ]|
-//		|[ writer.println(~nS); ]|
+		[|[ System.out.println(~nS); ]|]
 		where <java-lit> n => nS
 		
-	/*	html-to-Java :
-		Element(ElemName(startname), attributes, content, ElemName(endname))
-		->
-		<concat-middle>(
-			|[ writer.println("<" + ~startnameS + " " + ~(<attributes-to-string>attributes) + ">");]|, 
-			<jspBodyContents-to-Java>content,
-			//<jspBodyContents-to-Java>(<htmlify>content),
-			|[ writer.println("</"+ ~endnameS + ">");]|
-		)
-		where <java-lit> startname => startnameS
-		    ; <java-lit> endname => endnameS */
-
-
+	
 		html-to-Java :
 		Skriptlet(JavaSkriptlet(a))
 		->
-		plainJava
-		where <map(javaSkriptlet-to-Java);concat> a => plainJava
-//		where <debug> a 
+		<concat>plainJava
+		where <map(javaSkriptlet-to-Java)> a => plainJava
 
 		html-to-Java :
 		Expression(a)
 		->
-		|[ writer.println(~a); ]|
+		[|[ writer.println(~a); ]|]
 		
 		javaSkriptlet-to-Java :
 		For(a, b, c, Block(forBlock))
 		->
-		For(a, b, c, Block(plainJavaBlock))
-		where <map(javaSkriptlet-to-Java);concat> forBlock => plainJavaBlock
-		
-		javaSkriptlet-to-Java :
-		JavaStm
-		->
-		JavaStm
+		[For(a, b, c, Block(<concat>plainJavaBlock))]
+		where <map(javaSkriptlet-to-Java)> forBlock => plainJavaBlock
 		
 		javaSkriptlet-to-Java :
 		EscapedJSP(elems)
 		->
-		plainJavaEscaped
-		where <map(html-to-Java); concat> elems => plainJavaEscaped
-		
-		lift-JavaSkriptlet :
-		[If(expr, Block(listOfMixedStms))|stms]
+		<concat>plainJavaEscaped
+		where <map(html-to-Java)> elems => plainJavaEscaped
+		  
+		javaSkriptlet-to-Java :
+		If(expr, Block(ifBlock))
 		->
-		[If(expr, Block(<lift-MixedStms>listOfMixedStms))|<lift-JavaSkriptlet>stms]
+		[If(expr, Block(<concat>plainJavaBlock))]
+		where <map(javaSkriptlet-to-Java)> ifBlock => plainJavaBlock
 		
-		lift-JavaSkriptlet :
-		[If(expr, Block(then), Block(else))|stms]
+		javaSkriptlet-to-Java :
+		If(expr, Block(ifBlock), Block(elseBlock))
 		->
-		[If(expr, Block(<lift-MixedStms>then), Block(<lift-MixedStms>else))|<lift-JavaSkriptlet>stms]
-		
-		lift-JavaSkriptlet :
-		[DoWhile(Block(do), cond)|stms]
+		[If(expr, Block(<concat>plainJavaIf), Block(<concat>plainJavaElse))]
+		where 	<map(javaSkriptlet-to-Java)> ifBlock => plainJavaIf
+		;		<map(javaSkriptlet-to-Java)> elseBlock => plainJavaElse
+		 		
+		javaSkriptlet-to-Java :
+		DoWhile(Block(do), cond)
 		->
-		[DoWhile(Block(<lift-MixedStms>do), cond)|<lift-JavaSkriptlet>stms]
+		[DoWhile(Block(<concat>plainJavaBlock), cond)]
+		where <map(javaSkriptlet-to-Java)> do => plainJavaBlock
 		
-		lift-JavaSkriptlet :
-		[While(cond, Block(do))|stms]
+		javaSkriptlet-to-Java :
+		While(cond, Block(do))
 		->
-		[While(cond, Block(<lift-MixedStms>do))|<lift-JavaSkriptlet>stms]
+		[While(cond, Block(<concat>plainJavaBlock))]
+		where <map(javaSkriptlet-to-Java)> do => plainJavaBlock
 		
-		
-		
-		lift-JavaSkriptlet :
-		[JavaStm|stms]
+		javaSkriptlet-to-Java :
+		JavaStm
 		->
-		[JavaStm|<lift-JavaSkriptlet>stms]
-		
-		lift-JavaSkriptlet :
-		[]
-		->
-		[]
-		
-		lift-MixedStms :
-		[]
-		->
-		[]
-		
-		lift-MixedStms :
-		[EscapedJSP(conts)|stms]
-		->
-		<concat>[<jspBodyContents-to-Java>conts,<lift-MixedStms>stms]
-		
-		lift-MixedStms :
-		[JavaStm|stms]
-		->
-		[JavaStm|<lift-MixedStms>stms]
-		
-		htmlify :
-		[Element(a, b, c, d)|as]
-		->
-		[HtmlContent(Element(a, b, c, d))|<htmlify>as]
-		
-		
-		htmlify :
-		[Skriptlet(a)|as]
-		->
-		[HtmlContent(Skriptlet(a))|<htmlify>as]
-		
-		htmlify :
-		[]
-		->
-		[]
-
+		[JavaStm] 
 		
 		java-lit : s -> Lit(String([Chars(s)])) where <is-string> s 
 		
 		html-to-Java :
 		EmptyElement(startname, attributes) 
 		->
-		|[ writer.println("<" + ~startnameS + " " + ~(<attributes-to-string>attributes) + "/>");]|
+		[|[ writer.println("<" + ~startnameS + " " + ~(<attributes-to-string>attributes) + "/>");]|]
 		where <java-lit> startname => startnameS
 		
-		concat-middle :
+		try-concat-middle :
 		(x1, xs, x2)
 		->
 		<concat>[[x1],xs,[x2]]
+		where <is-list> xs
 		
-		/* attributes-to-string : %% placeholder
-		a
+		try-concat-middle :
+		(x1, x, x2)
 		->
-		<java-lit> "font=\\\"Arial\\\"" */
+		[x1, x, x2]
+		where <not(is-list)> x
 		
 		try-concat :
 		[]
@@ -396,7 +325,8 @@ public sugar Desugar {
 		[head|tail]
 		->
 		[head|<try-concat>tail]
-		where <not(is-list)> head
+		where 	<not(is-list)> head
+		
 		
 		try-concat :
 		[head|tail] 
@@ -426,35 +356,4 @@ public sugar Desugar {
 			),
 			<attributes-to-string>attributes
 		)
-		
-		
-		
-		%% Assumption: JSPDec is always the last ToplevelDec in a JSP containing file
-		extract-imports : %% since the LAST ToplevelDec is the JSPDec, anything else can just be passed
-		[tld|tlds]
-		->
-		[tld|<extract-imports>tlds]
-		
-		extract-imports : %% now we have to get the import statements out of the body and lift them to ToplevelDeclarations
-		[JSPDec(mods, Id(n), JSPBody(JSPDoc([])))]
-		->
-		[<jspDec>JSPDec(mods, Id(n), JSPBody(JSPDoc([])))]
-		
-		extract-imports : %% case 1 was the empty JSPDoc, case 2 is no import statement in the JSPBody
-		[JSPDec(mods, Id(n), JSPBody(JSPDoc(body)))]
-		->
-		[<jspDec>JSPDec(mods, Id(n), JSPBody(JSPDoc(body)))]
-		
-		extract-imports : %% case 3 is a JSPBody containing import statements
-		[JSPDec(mods, Id(n), JSPBody(JSPDoc([JSPImport(imp)|body])))]
-		->
-		[<jspImport-to-Java>JSPImport(imp)|<extract-imports>JSPDec(mods, Id(n), JSPBody(JSPDoc(body)))]
-		
-		jspImport-to-Java : %% Transform the import statement from JSP to an import statement in Java
-		JSPImport(imp)
-		->
-		TypeImportDec(imp)
-		
-
-	
 }
