@@ -239,7 +239,7 @@ public sugar Desugar {
 		html-to-Java :
 		Comment(n)
 		->
-		[|[ System.out.println(~nS); ]|]
+		[|[ writer.println("<!--" + ~nS + "-->"); ]|]
 		where <java-lit> n => nS
 		
 	
