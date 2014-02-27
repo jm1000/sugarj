@@ -9,7 +9,8 @@ sorts Document Element HtmlContent
     Prologue Element Epilogue -> Document {cons("Document")}
     Element -> HtmlContent
     DocTypeDecl -> HtmlContent {cons("DocTypeDec")}
-    HTMLComment -> HtmlContent {cons("Comment")}    
+    %% HTMLComment -> HtmlContent {cons("Comment")}    
+    HTMLComment -> HtmlContent   
     
 %% module html-prolog
   context-free syntax
@@ -32,7 +33,7 @@ sorts Document Element HtmlContent
   	"<" ElemName Attribute* "/>" 	-> Element {cons("EmptyElement")}
    	"<" ElemName Attribute* ">" 		-> Element {cons("EmptyElement")}
     "<" ElemName Attribute* ">" HtmlContent* "</" ElemName ">"    	-> Element {cons("Element")}
-	  NCName -> ElemName {cons("ElemName")}
+	  NCName01 -> ElemName {cons("ElemName")}
       
   //context-free syntax
     //HTMLTagStart ElemName Attribute* HTMLSlashTagEnd 	-> Element {cons("EmptyElement")}
@@ -53,7 +54,7 @@ sorts Document Element HtmlContent
     
   context-free syntax
     AttrName "=" AttValue 	-> Attribute {cons("Attribute")}
-    NCName -> AttrName {cons("AttrName")}
+    NCName02 -> AttrName {cons("AttrName")}
 
   syntax
     DoubleQuotedStm -> <URI-CF> {cons("URI")}
@@ -86,7 +87,7 @@ sorts Document Element HtmlContent
     FooCharDataText 				-> CharDataPart {cons("CharDataPart")}
     Ref 							-> CharDataPart
     <CharDataText-LEX> 				-> FooCharDataText
-    "&"   <NCName-LEX>   ";" -> EntityRef  {cons("EntityRef")}
+    "&"   <NCName03-LEX>   ";" -> EntityRef  {cons("EntityRef")}
     CharRef    -> Ref
     EntityRef  -> Ref
 
@@ -102,16 +103,20 @@ sorts Document Element HtmlContent
 
 %% module html-names
   lexical syntax
-    [A-Za-z\_] [A-Za-z0-9\.\-\_]* -> NCName
+    [A-Za-z\_] [A-Za-z0-9\.\-\_]* -> NCName01
+    [A-Za-z\_] [A-Za-z0-9\.\-\_]* -> NCName02
+    [A-Za-z\_] [A-Za-z0-9\.\-\_]* -> NCName03
 
   lexical restrictions
-    NCName -/- [A-Za-z0-9\.\-\_]
+    NCName01 -/- [A-Za-z0-9\.\-\_]
+    NCName02 -/- [A-Za-z0-9\.\-\_]
+    NCName03 -/- [A-Za-z0-9\.\-\_]
 
 %% module html-comments
   lexical syntax
-    "<!--" -> CommentLeft
-    "-->" -> CommentRight
-    CommentLeft CommentContent* CommentRight -> HTMLComment
+     "<!--" -> CommentLeft
+     "-->" -> CommentRight
+     CommentLeft CommentContent* CommentRight -> HTMLComment
     Dash -> CommentContent
     ~[\-] -> CommentContent
     "-" -> Dash

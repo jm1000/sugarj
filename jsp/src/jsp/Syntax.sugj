@@ -40,7 +40,7 @@ public sugar Syntax {
 	
 	
 	
-	 "%>" HtmlContent* "<%"				->  JavaStm{cons("EscapedJSP"), longest-match}
+	 "%>" HtmlContent* "<%"				->  JavaStm{cons("EscapedJSP"), longest-match, avoid}
 	 "%>" Content* "<%"				->  JSPSkriptletNotEscaped {reject}
 	
 	/*context-free syntax
@@ -54,7 +54,7 @@ public sugar Syntax {
 %%	"<%@ page" PageAttribute* "%>"	-> Content{cons("Page")}
 	"<%@ page" ImportDecl "%>"		-> Content{cons("JSPImport")}
 	"import=\"" ImportInformation "\"" -> ImportDecl
-	JavaTypeName	-> ImportInformation
+	JavaTypeName	-> ImportInformation{cons("ImportString")}
 	
 %%	rules
 %%  	   constraint-error :

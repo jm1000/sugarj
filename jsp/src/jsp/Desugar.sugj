@@ -80,9 +80,15 @@ public sugar Desugar {
 		JSPDec(mods, Id(n), JSPBody(JSPDoc([JSPImport(imp)|body])))
 		->
 		[TypeImportDec(
-			imp
+			<extract-Import-String>imp
 		)
 		,<jspDec>JSPDec(mods, Id(n), JSPBody(JSPDoc(body)))]
+		 where <debug> imp
+	 
+	 	extract-Import-String :
+	 	ImportString(n)
+	 	->
+	 	n
 	 
 		jspDec :
 		JSPDec(mods, Id(n), JSPBody(body))
@@ -231,6 +237,12 @@ public sugar Desugar {
 		; <java-lit> endname => endnameS
 		
 		html-to-Java :
+		EmptyElement(startname, attributes) 
+		->
+		[|[ writer.println("<" + ~startnameS + " " + ~(<attributes-to-string>attributes) + "/>");]|]
+		where <java-lit> startname => startnameS
+		
+		html-to-Java :
 		HtmlText(Text([CharDataPart(n)]))
 		->
 		[|[ writer.println(~nS); ]|]
@@ -239,7 +251,7 @@ public sugar Desugar {
 		html-to-Java :
 		Comment(n)
 		->
-		[|[ writer.println("<!--" + ~nS + "-->"); ]|]
+		[|[ writer.println(~nS); ]|]
 		where <java-lit> n => nS
 		
 	
@@ -296,13 +308,9 @@ public sugar Desugar {
 		->
 		[JavaStm] 
 		
-		java-lit : s -> Lit(String([Chars(s)])) where <is-string> s 
+		java-lit : s -> Lit(String([Chars(s2)])) where <is-string; string-as-chars(escape-chars)> s => s2
 		
-		html-to-Java :
-		EmptyElement(startname, attributes) 
-		->
-		[|[ writer.println("<" + ~startnameS + " " + ~(<attributes-to-string>attributes) + "/>");]|]
-		where <java-lit> startname => startnameS
+		
 		
 		try-concat-middle :
 		(x1, xs, x2)

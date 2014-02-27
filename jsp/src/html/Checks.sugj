@@ -1,6 +1,6 @@
-package xml;
+package html;
 
-import xml.XmlSyntax;
+import html.Syntax;
 
 public checks Checks {
   errors 
