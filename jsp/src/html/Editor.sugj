@@ -1,0 +1,41 @@
+package html;
+
+import editor.Editor;
+import editor.Colors;
+
+import html.Syntax;
+
+public editor services Editor {
+	
+	colorer
+		
+		%% HTML Tags
+		Element				:	blue
+		NCName01			:	blue
+		
+		%% HTML Attributes
+		Attribute			:	darkblue
+		NCName02			:	darkblue
+		AttValue			:	darkorange
+		DoubleQuotedText   	:	darkorange
+		SingleQuotedText   	:	darkorange
+		
+		%% HTML Text
+		CharDataText		:	0 0 0 italic
+		NCName03			:	0 0 0 italic
+
+        %% HTML Comments
+        CommentLeft			:	darkgreen
+        CommentRight		:	darkgreen
+        CommentContent		:	darkgreen
+        
+	
+	folding
+		Element.Element
+		
+	/* rules
+		outline = simple-label-outline(to-outline-label)
+		
+		to-outline-label = ?Element(<ElemName>, _)
+	*/
+}

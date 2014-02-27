@@ -1,0 +1,15 @@
+package jsp;
+
+import jsp.Syntax;
+import jsp.Desugar;
+
+import jsp.Editor;
+
+public jsp Test01{
+
+	<html>
+		<head></head>
+		<body></body>
+	</html>
+
+}

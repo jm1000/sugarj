@@ -1,0 +1,31 @@
+package jsp;
+
+import editor.Colors;
+import editor.Editor;
+import html.Editor;
+
+import jsp.Syntax;
+
+
+
+public editor services Editor {
+  colorer
+  
+	%% JSP Toplevel (for Java)
+    ToplevelDeclaration.JSPDec 		: darkgreen
+    
+    %% JSP Page Information (for Java)
+	Content.JSPImport				: keyword
+ 	ImportString					: 0 0 0 italic
+	
+	%% JSP Tags (for Java)
+ 	HtmlContent.Skriptlet			: blue
+ 	JavaStm.EscapedJSP				: blue
+	
+ 	
+  folding
+    %% ToplevelDeclaration.JSPDec
+    HtmlContent.Skriptlet
+    
+
+}

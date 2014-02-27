@@ -1,0 +1,29 @@
+
+package jsp;
+
+import jsp.Syntax;
+import jsp.Desugar;
+
+import jsp.Editor;
+
+//Testcase for escaped JSP, class declarations, HTML Comments. 
+
+public jsp Test04{
+
+	<html>
+		<head></head>
+		<body bgcolor="#FFFFFF">
+			<%
+			for(int i = 0; i < 10; i++){
+				%> Escaped JSP <%
+			}
+
+			%>
+			
+			foo bar
+			
+			<% System.out.println("Hello, world."); %>
+		</body>
+	</html>
+
+}
