@@ -13,6 +13,7 @@ public editor services Editor {
   
 	%% JSP Toplevel (for Java)
     ToplevelDeclaration.JSPDec 		: darkgreen
+    JSPBody							: black
     
     %% JSP Page Information (for Java)
 	Content.JSPImport				: keyword

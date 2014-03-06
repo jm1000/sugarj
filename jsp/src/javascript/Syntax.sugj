@@ -2,7 +2,7 @@ package javascript;
 
 import org.sugarj.languages.Plain;
  
-public sugar JavaScriptSyntax {  
+public sugar Syntax {  
    
   %%context-free start-symbols Program
   %%%
