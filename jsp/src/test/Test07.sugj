@@ -1,0 +1,36 @@
+package test;
+
+import javascript.HtmlWithJavaScript;
+import jsp.Syntax;
+
+import jsp.Desugar;
+
+import javascript.Editor;
+import jsp.Editor;
+
+// Testcase 07:	Javascript with function and onload in body
+
+public jsp Test07{
+	
+	<html>
+		<head>
+			<script language="javascript">
+				function fHello(){
+					alert("Hello, world!");
+					function internalFunction(){
+						
+					}	
+				}
+				
+				function fHello2(){
+					fHello();
+				}
+			</script>
+		</head>
+		<body onload="fHello()">
+		<div align="center"></div>
+		</body>
+		
+	</html>
+	
+}

@@ -1,0 +1,20 @@
+package javascript;
+
+import javascript.Syntax;
+import html.Syntax;
+
+public sugar HtmlWithJavaScript {
+	
+	%% Define Tag for HTML
+	context-free syntax
+		JavaScriptBlock -> HtmlContent{cons("JavaScript")}
+		"<" "script" "language" "=" "\"" "javascript" "\"" ">" Program? "</" "script" ">"
+			-> JavaScriptBlock
+	
+	%% Resolve ambiguities between html and javascript		
+	lexical syntax
+		"script"	->	NCName01 {reject}
+		HTMLEvent	->	NCName02 {reject}	
+		
+	
+}
