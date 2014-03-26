@@ -1,6 +1,5 @@
 package javascript;
 
-import org.sugarj.languages.Plain;
  
 public sugar Syntax {  
    

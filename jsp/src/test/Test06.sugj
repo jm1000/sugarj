@@ -3,6 +3,7 @@ package test;
 import javascript.HtmlWithJavaScript;
 import jsp.Syntax;
 
+import javascript.Desugar;
 import jsp.Desugar;
 
 import javascript.Editor;
@@ -17,7 +18,8 @@ public jsp Test06{
 		
 		<body>
 			<script language="javascript">
-				alert("Hello, world!");
+				 alert("Hello, world!");
+				 alert(42);
 			</script>
 		</body>
 		

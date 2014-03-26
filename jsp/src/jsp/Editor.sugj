@@ -9,6 +9,8 @@ import jsp.Syntax;
 
 
 public editor services Editor {
+	
+  	
   colorer
   
 	%% JSP Toplevel (for Java)
@@ -28,5 +30,15 @@ public editor services Editor {
     %% ToplevelDeclaration.JSPDec
     HtmlContent.Skriptlet
     
+  strategies
+  	outline = simple-label-outline(jsp-to-outline-label)
+  	
+  	jsp-to-outline-label: JSPDec(_, Id(name), _) -> name
+    
+  	
+  	
+  	 
+ 
+  	
 
 }

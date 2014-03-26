@@ -32,10 +32,27 @@ public editor services Editor {
 	
 	folding
 		Element.Element
+	
+	strategies
+		html-to-outline-label: Element(ElemName(name), _, _, _) -> name
+		html-to-outline-label: EmptyElement(ElemName(name), _) -> name
 		
-	/* rules
+		jsp-to-outline-label = html-to-outline-label
+	
+	outliner HTML Outlining
+		Element
+		EmptyElement
+
+	/*
+	references
+		reference _ : editor-resolve
+		hover _ 	: editor-hover
+	
+	*/
+		
+	/*	
+	 rules
 		outline = simple-label-outline(to-outline-label)
-		
 		to-outline-label = ?Element(<ElemName>, _)
 	*/
 }

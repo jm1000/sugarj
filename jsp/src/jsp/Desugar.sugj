@@ -4,7 +4,6 @@ package jsp;
 import org.sugarj.languages.Java; 
 import concretesyntax.Java;
 import jsp.Syntax;
-import javascript.HtmlWithJavaScript;
 
 public sugar Desugar {
 	
@@ -267,90 +266,7 @@ public sugar Desugar {
 		[|[ writer.println(~a); ]|]
 
 
-                html-to-Java :
-                JavaScript(a)
-                ->
-                <try-concat-middle>(|[ writer.println("<script language=\"javascript\">"); ]|,
-                desugaredJS,
-                |[ writer.println("</script>"); ]|)   
-                where <javascript-to-java> a => desugaredJS
-                ; <debug> a
-
-                javascript-to-java :
-                None()
-                ->
-                [ |[ writer.println(" "); ]| ]
                 
-                javascript-to-java :
-                Some(a)
-                ->
-                <javascript-to-java> a
-
-                javascript-to-java :
-                Program(a)
-                ->
-                desugaredJavaScript
-                where <map(desugar-javascript)> a => desugaredJavaScript
-                ; <debug> a
-                
-                
-                desugar-javascript :
-                FunctionDec(name, params, body)
-                ->
-                <try-concat-middle>([ |[ writer.println("function " + ~nameS + "(){"); ]|,
-                  desugaredBody,
-                  |[ writer.println("}"); ]| ])
-                where <map(desugar-javascript)> body => desugaredBody
-                     ;<java-lit> name => nameS 
-
-                desugar-javascript :
-                ExprStm(e)
-                ->
-                desugaredExpression
-                where <desugar-js-expression> e => desugaredExpression
-
-                desugar-js-expression :
-                MemberCall(me, Arguments(as))
-	        ->
-                [ |[ writer.println( ~desugar-me + "(" + ~desugar-as + ");"); ]| ] 
-                where <desugar-memberExpression> me => desugar-me
-                     ;<desugar-js-arguments> as => desugar-as
- 
-                desugar-memberExpression :
-                PrimaryExpr(pe)
-                ->
-                desugar-pe
-                where <desugar-js-primaryExpression> pe => desugar-pe         
-
-                desugar-js-primaryExpression :
-                Id(a)
-                ->
-                desugar-a
-                where <java-lit> a => desugar-a 
-
-                desugar-js-arguments :
-                [a|as]
-                ->
-                Plus(
-                    Plus(
-                      desugared-a,
-                      <java-lit> ","  
-                    ),
-                    <desugar-js-arguments> as
-                ) 
-                where <desugar-js-expression> a => desugared-a
-
-                desugar-js-arguments :
-                [a]
-                ->
-                desugared-a
-                where  <not(is-list)> a
-                     ; <desugar-js-expression> a => desugared-a 
-                
-                desugar-js-arguments :
-                []
-                ->
-                <java-lit>" "
 		
 		
 		javaSkriptlet-to-Java :

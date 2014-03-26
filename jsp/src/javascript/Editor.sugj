@@ -20,5 +20,17 @@ public editor services Editor{
 		
 	folding
 		FunctionDec
-			
+		
+	strategies
+		js-to-outline-label: FunctionDec(name, _, _) -> name 
+        js-to-outline-label: JavaScript(_) -> "JavaScript"
+        
+        html-to-outline-label = js-to-outline-label
+		
+	
+				/*
+	completions
+		completion template :
+			"if(" <c> ") \n\t {" <i> "}\n else \n\t {" <e> "\n\t}"
+			*/
 }

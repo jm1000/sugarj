@@ -3,6 +3,7 @@ package test;
 import javascript.HtmlWithJavaScript;
 import jsp.Syntax;
 
+import javascript.Desugar;
 import jsp.Desugar;
 
 import javascript.Editor;

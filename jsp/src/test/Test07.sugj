@@ -3,6 +3,7 @@ package test;
 import javascript.HtmlWithJavaScript;
 import jsp.Syntax;
 
+import javascript.Desugar;
 import jsp.Desugar;
 
 import javascript.Editor;
@@ -17,17 +18,20 @@ public jsp Test07{
 			<script language="javascript">
 				function fHello(){
 					alert("Hello, world!");
-					function internalFunction(){
-						
-					}	
+					alert(returnString());
 				}
 				
 				function fHello2(){
 					fHello();
 				}
+				
+				function returnString(){
+					return "Hello, world!";	
+				}
 			</script>
 		</head>
 		<body onload="fHello()">
+		<div align="center"></div>
 		<div align="center"></div>
 		</body>
 		
