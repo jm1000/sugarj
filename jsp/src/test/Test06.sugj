@@ -19,7 +19,6 @@ public jsp Test06{
 		<body>
 			<script language="javascript">
 				 alert("Hello, world!");
-				 alert(42);
 			</script>
 		</body>
 		

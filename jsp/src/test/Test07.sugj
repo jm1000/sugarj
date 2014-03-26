@@ -18,21 +18,10 @@ public jsp Test07{
 			<script language="javascript">
 				function fHello(){
 					alert("Hello, world!");
-					alert(returnString());
-				}
-				
-				function fHello2(){
-					fHello();
-				}
-				
-				function returnString(){
-					return "Hello, world!";	
 				}
 			</script>
 		</head>
-		<body onload="fHello()">
-		<div align="center"></div>
-		<div align="center"></div>
+		<body>
 		</body>
 		
 	</html>

@@ -175,7 +175,7 @@ public sugar Syntax {
 
   context-free syntax
     ConditionalExpr -> AssignmentExpr
-    LeftHandSideExpr "=" AssignmentExpr 				-> Expr {cons("Assigment")} 
+    LeftHandSideExpr "=" AssignmentExpr 				-> Expr {cons("Assignment")} 
     LeftHandSideExpr CompoundAssignment AssignmentExpr 	-> Expr 
     "*=" 	-> CompoundAssignment
     "/=" 	-> CompoundAssignment
@@ -296,11 +296,11 @@ public sugar Syntax {
     "do" Stm "while" "(" Expr ")"   -> DoStm {cons("DoStm")}
     "while" "(" Expr ")" Stm 		-> WhileStm {cons("WhileStm")}
 
-    "for" "(" ForInit? ";" Expr? ";" Expr? ")" Stm -> ForStm
+    "for" "(" ForInit ";" Expr ";" Expr ")" Stm -> ForStm{cons("ForStm")}
     Expr             	-> ForInit
     "var" VarDec* 		-> ForInit
 
-    "for" "(" ForInBinding "in" Expr       ")" Stm -> ForStm
+    "for" "(" ForInBinding "in" Expr       ")" Stm -> ForStm{cons("ForInStm")}
     LeftHandSideExpr -> ForInBinding
     "var" VarDec 	 -> ForInBinding
 
@@ -314,26 +314,26 @@ public sugar Syntax {
     "return" <WhiteSpace-CF>* <Expr-CF>? -> <ReturnStm-CF> {ast("Return(<2>)")}
 
   context-free syntax
-    "with" "(" Expr ")" Stm -> WithStm
+    "with" "(" Expr ")" Stm -> WithStm{cons("WithStm")}
 
   context-free syntax
-    "switch" "(" Expr ")" "{" CaseClause* "}" -> SwitchStm
+    "switch" "(" Expr ")" "{" CaseClause* "}" -> SwitchStm{cons("SwitchStm")}
     "case" Expr ":" StmList? -> CaseClause
     "default"   ":" StmList? -> CaseClause
 
   context-free syntax
-    Id ":" Stm -> LabelledStm
+    Id ":" Stm -> LabelledStm{cons("LabelledStm")}
 
   context-free syntax
     "throw" Expr -> ThrowStm
 
   context-free syntax
-    "try" Block Catch         -> TryStm
-    "try" Block Finally       -> TryStm
-    "try" Block Catch Finally -> TryStm
+    "try" Block Catch         -> TryStm{cons("TryCatch")}
+    "try" Block Finally       -> TryStm{cons("TryFinally")}
+    "try" Block Catch Finally -> TryStm{cons("TryCatchFinally")}
 
-    "catch" "(" Id ")" Block -> Catch
-    "finally" Block -> Finally
+    "catch" "(" Id ")" Block -> Catch{cons("Catch")}
+    "finally" Block -> Finally{cons("Finally")}
 
 
   lexical syntax
