@@ -325,7 +325,7 @@ public sugar Syntax {
     Id ":" Stm -> LabelledStm{cons("LabelledStm")}
 
   context-free syntax
-    "throw" Expr -> ThrowStm
+    "throw" Expr -> ThrowStm{cons("Throw")}
 
   context-free syntax
     "try" Block Catch         -> TryStm{cons("TryCatch")}

@@ -36,14 +36,16 @@ public sugar Desugar {
         <concat> desugaredJavaScript
         where <map(desugar-javascript)> a => desugaredJavaScript
                 
-                
+        %% Type: Id, List of Id, List of SourceElements -> List of Java Stm        
         desugar-javascript :
-        FunctionDec(name, params, body)
+        FunctionDec(Id(name), params, body)
         ->
-        <try-concat-middle>[ |[ writer.println("function " + ~nameS + "(){"); ]|,
+        <try-concat-middle>[ |[ writer.println("function " + ~nameS + "( ~desugared-params ){"); ]|,
         <concat> desugaredBody,
         |[ writer.println("}"); ]| ]
         where <map(desugar-javascript)> body => desugaredBody
+        ; <map(id-to-string)> params => desugared-params-temp
+        ; <concat-java-strings> desugared-params-temp => desugared-params
         ; <java-lit> name => nameS 
 
         desugar-javascript :
@@ -68,9 +70,8 @@ public sugar Desugar {
         desugar-javascript :
           If(cond, stm)
           ->
-          <try-concat-middle> [ |[ writer.println("if( ~desugaredCond )"); ]|,
-          desugaredStm,
-          |[ writer.println(" "); ]| ]
+          <concat> [ [|[ writer.println("if( ~desugaredCond )"); ]|],
+          desugaredStm ]
           where <js-expression-to-string> cond => desugaredCond
           ; <desugar-javascript> stm => desugaredStm
         
@@ -79,9 +80,9 @@ public sugar Desugar {
         desugar-javascript :
           IfElse(cond, if, else)
           ->
-          [ |[ writer.println("if( ~desugaredCond )"); ]|,
+          <concat> [ [|[ writer.println("if( ~desugaredCond )"); ]|],
             desugaredIf,
-            |[ writer.println("else"); ]|,
+            [|[ writer.println("else"); ]|],
             desugaredElse ] 
           where <js-expression-to-string> cond => desugaredCond
           ; <desugar-javascript> if => desugaredIf
@@ -105,7 +106,7 @@ public sugar Desugar {
         desugar-javascript :
           WhileStm(e, stm)
           ->
-          [ |[ writer.println("while( ~desugared-expr )"); ]|,
+          <concat> [ [|[ writer.println("while( ~desugared-expr )"); ]|],
             desugared-stm ]
           where <js-expression-to-string> e => desugared-expr
           ; <desugar-javascript> stm => desugared-stm
@@ -114,7 +115,7 @@ public sugar Desugar {
         desugar-javascript :
           ForStm(e1, e2, e3, stm)
           ->
-          [ |[ writer.println("for( ~desugar-e1 ; ~desugar-e2 ; ~desugar-e3 )"); ]|,
+          <concat> [ [|[ writer.println("for( ~desugar-e1 ; ~desugar-e2 ; ~desugar-e3 )"); ]|],
             desugared-stm ]
           where <js-expression-to-string> e1 => desugar-e1
           ; <js-expression-to-string> e2 => desugar-e2
@@ -125,9 +126,9 @@ public sugar Desugar {
         desugar-javascript :
           ForStm(vars, e1, e2, stm)
           ->
-          [ |[ writer.println("for( "); ]|,
-            |[ writer.println(" ~desugared-vars, "); ]|,
-            |[ writer.println(" ~desugared-e1 ; desugared-e2 )"); ]|,
+          <concat> [ [|[ writer.println("for( "); ]|],
+            [|[ writer.println(" ~desugared-vars, "); ]|],
+            [|[ writer.println(" ~desugared-e1 ; desugared-e2 )"); ]|],
             desugared-stm ]
           where <js-expression-to-string> e1 => desugared-e1
           ; <js-expression-to-string> e2 => desugared-e2
@@ -149,9 +150,14 @@ public sugar Desugar {
               )
         )
         where <is-list> strs 
-        
+
+        concat-java-strings :
+        [str|None]
+        ->
+        str
+
         js-vardec-to-string :
-          VarDec(Id(name), Init(ae))
+          VarDec(name, Init(ae))
           ->
           Plus( name,
                 Plus( <java-lit> "=",
@@ -160,15 +166,15 @@ public sugar Desugar {
           ) 
           
           js-vardec-to-string :
-          a
+          VarDec(name)
           ->
-          <java-lit> "hallo"
+          <java-lit> name
 
         %% TODO: Correct concatenation
         desugar-javscript :
           WithStm(e, stm)
           ->
-          [ |[ writer.println("with( ~desugared-e )"); ]|,
+          <concat> [ [|[ writer.println("with( ~desugared-e )"); ]|],
             desugared-stm ]
           where <js-expression-to-string> e => desugared-e
           ; <desugar-javascript> stm => desugared-stm
@@ -177,11 +183,11 @@ public sugar Desugar {
         desugar-javascript :
           LabelledStm (Id(name), stm)
           ->
-          [ |[ writer.println("~name: "); ]|,
+          <concat> [ [|[ writer.println("~name: "); ]|],
             desugared-stm ]
           where <desugar-javascript> stm => desugared-stm 
 
-
+          %% TODO: write rule desugar-caseclauses!
         /* desugar-javascript :
           SwitchStm(e, ccs)
           ->
@@ -196,7 +202,7 @@ public sugar Desugar {
         desugar-javascript :
           TryCatch(block, catch)
           ->
-          [ |[ writer.println("try"); ]|,
+          <concat> [ [|[ writer.println("try"); ]|],
             desugared-block,
             desugared-catch ]
           where <desugar-javascript> block => desugared-block
@@ -206,7 +212,7 @@ public sugar Desugar {
         desugar-javascript :
           TryFinally(block, finally)
           ->
-          [ |[ writer.println("try"); ]|,
+          <concat> [ [|[ writer.println("try"); ]|],
             desugared-block,
             desugared-finally ]
           where <desugar-javascript> block => desugared-block
@@ -216,7 +222,7 @@ public sugar Desugar {
         desugar-finally :
           Finally(block)
           ->
-          [ |[ writer.println("finally"); ]|,
+          <concat> [ [|[ writer.println("finally"); ]|],
             desugared-block ]
           where <desugar-javascript> block => desugared-block
 
@@ -224,28 +230,60 @@ public sugar Desugar {
         desugar-catch :
           Catch(name, block)
           ->
-          [ |[ writer.println("catch(~id)"); ]|,
+          <concat> [ [|[ writer.println("catch(~id)"); ]|],
           desugared-block ]
           where <desugar-javascript> block => desugared-block
 
 
-        /* desugar-javascript :
-          ContinueStm
+         desugar-javascript :
+          Continue(name)
+          ->
+          [|[ writer.println("continue ~nameS"); ]|]
+          where <java-lit> name => nameS
+
+         desugar-javascript :
+         Continue()
+         ->
+         [|[ writer.println("continue"); ]|]
 
     
         desugar-javascript :
-          BreakStm
+          Break(name)
+          ->
+          [|[ writer.println("break ~nameS"); ]|]
+          where <java-lit> name => nameS
+
+        desugar-javascript :
+          Break()
+          ->
+          [|[ writer.println("break"); ]|]
 
 
         desugar-javascript :
-          ReturnStm
+          Return(e)
+          ->
+          [|[ writer.println("return ~desugared-e"); ]|]
+          where <js-expression-to-string> e => desugared-e
+
+        desugar-javascript :
+          Return()
+          ->
+          [|[ writer.println("return"); ]|]
 
 
         desugar-javascript :
-          ThrowStm
+          Throw(e)
+          ->
+          [|[ writer.println("throw ~desugared-e"); ]|]
+          where <js-expression-to-string> e => desugared-e
 
         desugar-javascript :
-          VarStm */
+          VarStm(vars)
+          ->
+          [ |[ writer.println("var ~desugared-vars"); ]|]
+          where <map(js-vardec-to-string)> vars => desugared-vars-temp
+          ; <concat-java-strings> desugared-vars-temp => desugared-vars
+          
  
         desugar-js-expression :
         MemberCall(me, Arguments(as))
@@ -382,11 +420,34 @@ public sugar Desugar {
        	<java-lit> a
        	
        /*	literal-to-string :
-       	Num(a)
+       	Num(Decimal(a))
        	->
        	aString
        	where <java-lit> a -> aString */
-	
-	
+
+        literal-to-string :
+        Num(HexInt(a))
+        ->
+        <java-lit> a
+
+        literal-to-string :
+        Null("null")
+        ->
+        <java-lit> "null"
+
+        literal-to-string :
+        Bool("true")
+        ->
+        <java-lit> "true"
+
+        literal-to-string :
+        Bool("false")
+        ->
+        <java-lit> "false"
+
+        literal-to-string :
+        String(sl)
+        ->
+        <java-lit> sl
 	
 }

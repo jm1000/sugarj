@@ -16,5 +16,15 @@ public sugar HtmlWithJavaScript {
 		"script"	->	NCName01 {reject}
 		HTMLEvent	->	NCName02 {reject}	
 		
-	
+        %% Allow HTML Content to be handled like JS Arguments, e.g.:
+        %%    document.write(<div></div>);
+        %% instead of
+        %%    document.write("<div></div>");
+        %% Advantage: static syntactical correctness of HTML passes as argument!!
+        context-free syntax 
+              "(" {JSorHTML ","}+ ")" -> Arguments {cons("MixedArguments")}
+              AssignmentExpr          -> JSorHTML
+              Htmlcontent             -> JSorHTML
+
+
 }
