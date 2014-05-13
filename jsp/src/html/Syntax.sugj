@@ -10,7 +10,7 @@ sorts Document Element HtmlContent
     Element -> HtmlContent
     DocTypeDecl -> HtmlContent {cons("DocTypeDec")}
     %% HTMLComment -> HtmlContent {cons("Comment")}    
-    HTMLComment -> HtmlContent   
+    HTMLComment -> HtmlContent{cons("Comment")}   
     
 %% module html-prolog
   context-free syntax
@@ -111,6 +111,8 @@ sorts Document Element HtmlContent
     NCName01 -/- [A-Za-z0-9\.\-\_]
     NCName02 -/- [A-Za-z0-9\.\-\_]
     NCName03 -/- [A-Za-z0-9\.\-\_]
+
+
 
 %% module html-comments
   lexical syntax

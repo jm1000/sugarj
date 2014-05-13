@@ -60,14 +60,14 @@ public sugar Syntax {
     ElementList "," Elision? LiteralElement -> ElementList {cons("ElementList2")}
 
     AssignmentExpr -> LiteralElement {cons("LiteralElement")}
-    ","+ -> Elision
+    ","+ -> Elision{cons("Elision")}
 
   %%%
    %% 11.1.5: Object Initialiser
    %%%
   context-free syntax
-    "{" {ProperyNameAndValue ","}* "}"  -> ObjectLiteral {cons("ObjectLiteral")}
-    PropertyName ":" AssignmentExpr 	-> ProperyNameAndValue
+    "{" {PropertyNameAndValue ","}* "}"  -> ObjectLiteral {cons("ObjectLiteral")}
+    PropertyName ":" AssignmentExpr 	-> PropertyNameAndValue{cons("PropertyNameAndValue")}
     Identifier     -> PropertyName {cons("PropertyId")}
     StringLiteral  -> PropertyName {cons("PropertyString")}
     NumericLiteral -> PropertyName {cons("PropertyNum")}
@@ -83,7 +83,7 @@ public sugar Syntax {
     "new" MemberExpr Arguments         -> MemberExpr {cons("newMemberExpr")}
 
     MemberExpr    -> NewExpr
-    "new" NewExpr -> NewExpr
+    "new" NewExpr -> NewExpr{cons("NewExpr")}
 
     MemberExpr Arguments             -> CallExpr {cons("MemberCall")}
     CallExpr   Arguments             -> CallExpr {cons("CallCall")}
@@ -101,8 +101,8 @@ public sugar Syntax {
    %%%
   context-free syntax
     LeftHandSideExpr 		-> PostfixExpr
-    LeftHandSideExpr "++" 	-> PostfixExpr
-    LeftHandSideExpr "--" 	-> PostfixExpr
+    LeftHandSideExpr "++" 	-> PostfixExpr{cons("PostfixInc")}
+    LeftHandSideExpr "--" 	-> PostfixExpr{cons("PostfixDecr")}
 
   %%%
    %% 11.4: Unary Expressions
@@ -110,15 +110,15 @@ public sugar Syntax {
   context-free syntax
     PostfixExpr -> UnaryExpr
 
-    "delete" UnaryExpr -> UnaryExpr
-    "void" UnaryExpr   -> UnaryExpr
-    "typeof" UnaryExpr -> UnaryExpr
-    "++" UnaryExpr     -> UnaryExpr
-    "--" UnaryExpr     -> UnaryExpr
-    "+" UnaryExpr      -> UnaryExpr
-    "-" UnaryExpr      -> UnaryExpr
-    "~" UnaryExpr      -> UnaryExpr
-    "!" UnaryExpr      -> UnaryExpr
+    "delete" UnaryExpr -> UnaryExpr{cons("UnaryDelete")}
+    "void" UnaryExpr   -> UnaryExpr{cons("UnaryVoid")}
+    "typeof" UnaryExpr -> UnaryExpr{cons("UnaryTypeOf")}
+    "++" UnaryExpr     -> UnaryExpr{cons("UnaryInc")}
+    "--" UnaryExpr     -> UnaryExpr{cons("UnaryDecr")}
+    "+" UnaryExpr      -> UnaryExpr{cons("UnaryPlus")}
+    "-" UnaryExpr      -> UnaryExpr{cons("UnaryMinus")}
+    "~" UnaryExpr      -> UnaryExpr{cons("UnaryTilde")}
+    "!" UnaryExpr      -> UnaryExpr{cons("UnaryNot")}
 
   %%%
    %% 11.5: Multiplicative Expressions
@@ -137,39 +137,39 @@ public sugar Syntax {
 
   context-free syntax
     AddExpr -> ShiftExpr
-    ShiftExpr "<<"  AddExpr -> ShiftExpr
-    ShiftExpr ">>"  AddExpr -> ShiftExpr
-    ShiftExpr ">>>" AddExpr -> ShiftExpr
+    ShiftExpr "<<"  AddExpr -> ShiftExpr{cons("ShiftExprSL")}
+    ShiftExpr ">>"  AddExpr -> ShiftExpr{cons("ShiftExprSR")}
+    ShiftExpr ">>>" AddExpr -> ShiftExpr{cons("ShiftExprSRR")}
 
   context-free syntax
     ShiftExpr -> RelExpr
-    RelExpr "<"   ShiftExpr -> RelExpr
-    RelExpr ">"   ShiftExpr -> RelExpr
-    RelExpr "<="  ShiftExpr -> RelExpr
-    RelExpr ">="  ShiftExpr -> RelExpr
-    RelExpr "instanceof" ShiftExpr -> RelExpr
-    RelExpr "in" ShiftExpr -> RelExpr
+    RelExpr "<"   ShiftExpr -> RelExpr{cons("RelExprLT")}
+    RelExpr ">"   ShiftExpr -> RelExpr{cons("RelExprGT")}
+    RelExpr "<="  ShiftExpr -> RelExpr{cons("RelExprLEQ")}
+    RelExpr ">="  ShiftExpr -> RelExpr{cons("RelExprGEQ")}
+    RelExpr "instanceof" ShiftExpr -> RelExpr{cons("RelExprInstanceOf")}
+    RelExpr "in" ShiftExpr -> RelExpr{cons("RelExprIn")}
 
   context-free syntax
     RelExpr -> EqExpr
-    EqExpr "=="  RelExpr -> EqExpr
-    EqExpr "!="  RelExpr -> EqExpr
-    EqExpr "===" RelExpr -> EqExpr
-    EqExpr "!==" RelExpr -> EqExpr
+    EqExpr "=="  RelExpr -> EqExpr{cons("Equality1")}
+    EqExpr "!="  RelExpr -> EqExpr{cons("NotEquality1")}
+    EqExpr "===" RelExpr -> EqExpr{cons("Equality2")}
+    EqExpr "!==" RelExpr -> EqExpr{cons("NotEquality2")}
 
   context-free syntax
     EqExpr -> BitwiseAndExpr
-    BitwiseAndExpr "&" EqExpr -> BitwiseAndExpr
+    BitwiseAndExpr "&" EqExpr -> BitwiseAndExpr{cons("BitwiseAndExpr")}
     BitwiseAndExpr -> BitwiseXorExpr
-    BitwiseXorExpr "^" BitwiseAndExpr -> BitwiseXorExpr
+    BitwiseXorExpr "^" BitwiseAndExpr -> BitwiseXorExpr{cons("BitwiseXorExpr")}
     BitwiseXorExpr -> BitwiseOrExpr
-    BitwiseOrExpr "|" BitwiseXorExpr -> BitwiseOrExpr
+    BitwiseOrExpr "|" BitwiseXorExpr -> BitwiseOrExpr{cons("BitwiseOrExpr")}
 
   context-free syntax
     BitwiseOrExpr -> LogicalAndExpr
-    LogicalAndExpr "&&" BitwiseOrExpr -> LogicalAndExpr
+    LogicalAndExpr "&&" BitwiseOrExpr -> LogicalAndExpr{cons("LogicalAndExpr")}
     LogicalAndExpr -> LogicalOrExpr
-    LogicalOrExpr "||" LogicalAndExpr -> LogicalOrExpr
+    LogicalOrExpr "||" LogicalAndExpr -> LogicalOrExpr{cons("LogicalOrExpr")}
     LogicalOrExpr -> ConditionalExpr
     LogicalOrExpr "?" AssignmentExpr ":" AssignmentExpr -> ConditionalExpr
 
@@ -177,21 +177,21 @@ public sugar Syntax {
     ConditionalExpr -> AssignmentExpr
     LeftHandSideExpr "=" AssignmentExpr 				-> Expr {cons("Assignment")} 
     LeftHandSideExpr CompoundAssignment AssignmentExpr 	-> Expr 
-    "*=" 	-> CompoundAssignment
-    "/=" 	-> CompoundAssignment
-    "%=" 	-> CompoundAssignment
-    "+=" 	-> CompoundAssignment
-    "-=" 	-> CompoundAssignment
-    "<<=" 	-> CompoundAssignment
-    ">>=" 	-> CompoundAssignment
-    ">>>=" 	-> CompoundAssignment
-    "&=" 	-> CompoundAssignment
-    "^="	-> CompoundAssignment
-    "|=" 	-> CompoundAssignment
+    "*=" 	-> CompoundAssignment{cons("CompAssStarEq")}
+    "/=" 	-> CompoundAssignment{cons("CompAssSlashEq")}
+    "%=" 	-> CompoundAssignment{cons("CompAssPercEq")}
+    "+=" 	-> CompoundAssignment{cons("CompAssPlusEq")}
+    "-=" 	-> CompoundAssignment{cons("CompAssMinusEq")}
+    "<<=" 	-> CompoundAssignment{cons("CompAssSLEq")}
+    ">>=" 	-> CompoundAssignment{cons("CompAssSREq")}
+    ">>>=" 	-> CompoundAssignment{cons("CompAssSRREq")}
+    "&=" 	-> CompoundAssignment{cons("CompAssAndEq")}
+    "^="	-> CompoundAssignment{cons("CompAssXorEq")}
+    "|=" 	-> CompoundAssignment{cons("CompAssOrEq")}
 
   context-free syntax
     AssignmentExpr              -> Expr
-    Expr "," AssignmentExpr 	-> Expr
+    Expr "," AssignmentExpr 	-> Expr{cons("CompExpr")}
 
   %%%
    %% Default expression context
@@ -252,7 +252,7 @@ public sugar Syntax {
     
   syntax
      <StmListPrefix-CF> <LAYOUT?-CF> <NotTerminatedStm-CF> (<WhiteSpace-CF>* ";")?
-      -> <StmList-CF> {ast("<conc(<1>, [<2>])>")}
+      -> <StmList-CF> {cons("StmList")}
   
 
 %%%
@@ -298,11 +298,11 @@ public sugar Syntax {
 
     "for" "(" ForInit ";" Expr ";" Expr ")" Stm -> ForStm{cons("ForStm")}
     Expr             	-> ForInit
-    "var" VarDec* 		-> ForInit
+    "var" VarDec* 		-> ForInit{cons("ForVarDec")}
 
     "for" "(" ForInBinding "in" Expr       ")" Stm -> ForStm{cons("ForInStm")}
     LeftHandSideExpr -> ForInBinding
-    "var" VarDec 	 -> ForInBinding
+    "var" VarDec 	 -> ForInBinding{cons("ForInVarDec")}
 
   syntax
     "continue" <WhiteSpace-CF>* <Id-CF>? -> <ContinueStm-CF> {ast("Continue(<2>)")}
@@ -318,8 +318,8 @@ public sugar Syntax {
 
   context-free syntax
     "switch" "(" Expr ")" "{" CaseClause* "}" -> SwitchStm{cons("SwitchStm")}
-    "case" Expr ":" StmList? -> CaseClause
-    "default"   ":" StmList? -> CaseClause
+    "case" Expr ":" StmList? -> CaseClause{cons("CaseCase")}
+    "default"   ":" StmList? -> CaseClause{cons("DefaultCase")}
 
   context-free syntax
     Id ":" Stm -> LabelledStm{cons("LabelledStm")}

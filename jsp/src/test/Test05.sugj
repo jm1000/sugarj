@@ -14,7 +14,9 @@ import jsp.Editor;
 public jsp Test05{
 	
 	<html>
-		<head></head>
+		<head>
+			<title>Empty Script</title>
+		</head>
 		
 		<body>
 			<script language="javascript">

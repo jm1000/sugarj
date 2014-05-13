@@ -73,6 +73,7 @@ public sugar Desugar {
       , Id("HttpServletResponse")
       )
     ), <jspDec>JSPDec(a, b, c)]
+
 	
 	
 	
@@ -90,7 +91,7 @@ public sugar Desugar {
 	 	n
 	 
 		jspDec :
-		JSPDec(mods, Id(n), JSPBody(body))
+		JSPDec(mods, Id(n), JSPBody(JSPDoc(body)))
 	 	->
 %%	 	ClassDec(ClassDecHead([ SingleElemAnno(TypeName(Id("WebServlet")), Lit(String(Id(n)))), mods], Id(n), None, Some(SuperDec(ClassType(TypeName(Id("HttpServlet")), None))), None), <jspBody-to-Java>JSPBody(body))
 %%		PlainDec(PlainDecHead(mods, n, Some("jsp")), PlainBody(body))
@@ -105,7 +106,7 @@ public sugar Desugar {
       			, None()
       		)
     		, ClassBody(
-    		  	[ <jspBody-to-Java>JSPBody(body)
+    		  	<concat>[[ <jspBody-to-Java>JSPBody(JSPDoc(bodyWithoutDecs))
     		  	, MethodDec(
             MethodDecHead(
               [Protected()]
@@ -132,8 +133,17 @@ public sugar Desugar {
               )
             )
           , Block([])
-          )])
+          )], desugaredDeclarations])
     	)
+        where <filter(?JSPDeclaration(_))> body => extractedDeclarations
+        ;     <concat><map(desugar-JSPDeclaration)> extractedDeclarations => desugaredDeclarations
+		;	  <filter(not(?JSPDeclaration(_)))> body => bodyWithoutDecs
+
+
+        desugar-JSPDeclaration :
+        JSPDeclaration(decl)
+        ->
+        decl
 	  
 	  
 		jspBody-to-Java :
@@ -228,12 +238,16 @@ public sugar Desugar {
 		html-to-Java :
 		Element(ElemName(startname), attributes, kids, ElemName(endname))
 		->
-		<try-concat-middle>(|[ writer.println("<" + ~startnameS + " " + ~(<attributes-to-string>attributes) + ">"); ]|,
-		javaKids,
-		|[ writer.println("</" + ~endnameS + ">");]|)
+		<concat>[<try-concat-middle>(|[ writer.println("<" + ~startnameS + " "); ]|,
+                desugaredAttributes, 
+                |[ writer.println(">");]|) ,
+                javaKids,
+		[|[ writer.println("</" + ~endnameS + ">");]|] ]
 		where <try-concat><map(html-to-Java)> kids => javaKids 
 		; <java-lit> startname => startnameS
 		; <java-lit> endname => endnameS
+                ; <html-attributes-to-Java> attributes => desugaredAttributes
+               
 		
 		html-to-Java :
 		EmptyElement(startname, attributes) 
@@ -250,8 +264,7 @@ public sugar Desugar {
 		html-to-Java :
 		Comment(n)
 		->
-		[|[ writer.println(~nS); ]|]
-		where <java-lit> n => nS
+		[]
 		
 	
 		html-to-Java :
@@ -266,7 +279,18 @@ public sugar Desugar {
 		[|[ writer.println(~a); ]|]
 
 
-                
+                html-attributes-to-Java :
+                [Attribute(AttrName(name), DoubleQuoted([CharDataPart(value)]))|attributes] 
+                ->
+                <concat>[ [ |[ writer.println(~nameS + "=\""); ]|, |[ writer.println(~valueS); ]|, |[writer.println("\" "); ]| ],
+                <html-attributes-to-Java> attributes] 
+                where <java-lit> name => nameS
+                ; <java-lit> value => valueS
+
+                html-attributes-to-Java :
+                []
+                ->
+                []
 		
 		
 		javaSkriptlet-to-Java :

@@ -2,6 +2,7 @@ package javascript;
 
 import javascript.Syntax;
 import html.Syntax;
+import jsp.Desugar;
 
 public sugar HtmlWithJavaScript {
 	
@@ -16,5 +17,14 @@ public sugar HtmlWithJavaScript {
 		"script"	->	NCName01 {reject}
 		HTMLEvent	->	NCName02 {reject}	
 		
-	
+        %% Allow HTML elements to stand as JS Expression
+        context-free syntax
+          Element -> PrimaryExpr{cons("HtmlExpr")}
+          %% "@" HtmlContent -> HtmlExpression{cons("HtmlExpression")} 
+
+        rules
+          desugar-primary-expr :
+           HtmlExpr(element)
+           ->
+           <html-to-Java>element   
 }

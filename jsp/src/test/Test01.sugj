@@ -9,7 +9,7 @@ public jsp Test01{
 
 	<html>
 		<head></head>
-		<body></body>
+		<body>foobar</body>
 	</html>
 
 }

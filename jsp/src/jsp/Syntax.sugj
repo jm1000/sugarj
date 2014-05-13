@@ -37,8 +37,11 @@ public sugar Syntax {
 	context-free syntax
 	"<%" JSPSkriptletNotEscaped "%>"		->  HtmlContent{cons("Skriptlet"), longest-match}
 	JavaStm*								->	JSPSkriptletNotEscaped{cons("JavaSkriptlet")}
-	
-	
+
+        "<%!" Dec* "%>"   -> Content{cons("JSPDeclaration")}	
+        JavaMethodDec     -> Dec
+        JavaFieldDec	  -> Dec
+        JavaClassDec	  -> Dec
 	
 	 "%>" HtmlContent* "<%"				->  JavaStm{cons("EscapedJSP"), longest-match, avoid}
 	 "%>" Content* "<%"				->  JSPSkriptletNotEscaped {reject}

@@ -22,7 +22,7 @@ public editor services Editor{
 		FunctionDec
 		
 	strategies
-		js-to-outline-label: FunctionDec(name, _, _) -> name 
+		js-to-outline-label: FunctionDec(name, _, _) -> <concat-strings> ["function ", name]
         js-to-outline-label: JavaScript(_) -> "JavaScript"
         
         html-to-outline-label = js-to-outline-label

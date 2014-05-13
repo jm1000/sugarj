@@ -1,5 +1,6 @@
 package test;
 
+
 import jsp.Syntax;
 import jsp.Desugar;
 
@@ -12,8 +13,8 @@ public jsp Test02{
 		<head></head>
 		<body darkblue="Attribute values are darkorange">
 			HTML Text is black and italic
-			<blue></blue>
+			<blue></blue> 
 		</body>
-	</html>
+	</html> 
 
 }

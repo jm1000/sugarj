@@ -2,7 +2,6 @@ package jsp;
 
 import editor.Colors;
 import editor.Editor;
-import html.Editor;
 
 import jsp.Syntax;
 
@@ -34,6 +33,10 @@ public editor services Editor {
   	outline = simple-label-outline(jsp-to-outline-label)
   	
   	jsp-to-outline-label: JSPDec(_, Id(name), _) -> name
+  	jsp-to-outline-label: JSPDeclaration(_) -> "<%! %>"
+  	jsp-to-outline-label: Skriptlet(_) -> "<% %>"
+  	jsp-to-outline-label: Expression(_) -> "<%= %>"
+  	
     
   	
   	
